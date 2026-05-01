@@ -62,7 +62,7 @@ git push -u origin main --force
 
 ## Credenciales
 
-- **Admin**: usuario `Administrador`, contraseña `itmab2026`
+- **Admin**: usuario `agustinbarbesino@gmail.com`, contraseña `67Sist2187`
 - Los estudiantes se registran desde el login con email y contraseña
 
 ## Estructura del proyecto

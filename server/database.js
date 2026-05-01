@@ -69,7 +69,7 @@ async function seedAdmin() {
       await client.query(
         `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        ['admin', 'admin@itmab.local', 'Administrador', 'itmab2026', 'admin', null, null, null, null]
+         ['admin', 'agustinbarbesino@gmail.com', 'Administrador', '67Sist2187', 'admin', null, null, null, null]
       );
       await client.query(
         `INSERT INTO players (id, user_id, display_name, first_name, last_name, role, course_year, course_division, rating)
