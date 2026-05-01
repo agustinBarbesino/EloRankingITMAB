@@ -2,7 +2,7 @@ services:
   - type: web
     name: elo-ranking-api
     env: node
-    region: sao
+    region: ohio
     plan: free
     buildCommand: cd server && npm install
     startCommand: cd server && node index.js
@@ -29,4 +29,4 @@ services:
 databases:
   - name: elo-ranking-db
     plan: free
-    region: sao
+    region: ohio
