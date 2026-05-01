@@ -62,6 +62,15 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function updateUser(id, data) {
+    try {
+      const result = await api.updateUser(id, data);
+      return { success: true, user: result.user };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
   async function listUsers() {
     try {
       return await api.getUsers();
@@ -71,7 +80,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, login, registerStudent, logout, createUser, deleteUser, listUsers }}>
+    <AuthContext.Provider value={{ currentUser, login, registerStudent, logout, createUser, updateUser, deleteUser, listUsers }}>
       {children}
     </AuthContext.Provider>
   );

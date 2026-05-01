@@ -101,6 +101,12 @@
   border-color: var(--blue-400);
 }
 
+.form-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
 .alert-error {
   background: rgba(192, 57, 43, 0.1);
   border: 1px solid var(--danger);
@@ -138,6 +144,22 @@
 
 .btn-primary:hover {
   background: var(--accent-hover);
+}
+
+.btn-secondary {
+  padding: 0.9rem 1.5rem;
+  background: var(--cream-300);
+  color: var(--blue-700);
+  border: 2px solid var(--cream-400);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--cream-400);
 }
 
 .empty-text {
@@ -180,6 +202,16 @@
   background: var(--cream-100);
 }
 
+.users-table tbody tr.editing-row {
+  background: rgba(58, 124, 165, 0.1);
+  border-left: 3px solid var(--blue-400);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.4rem;
+}
+
 .role-badge {
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -212,6 +244,22 @@
 
 .btn-delete:hover {
   background: #A93226;
+}
+
+.btn-edit {
+  background: var(--blue-400);
+  color: var(--cream-100);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-edit:hover {
+  background: var(--blue-500);
 }
 
 @media (max-width: 600px) {

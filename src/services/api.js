@@ -92,4 +92,8 @@ export const api = {
   createUser(data) {
     return request('POST', '/admin/users', data);
   },
+
+  updateUser(id, data) {
+    return request('PUT', `/admin/users/${id}`, data);
+  },
 };

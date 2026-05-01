@@ -15,7 +15,7 @@ const courseOptions = [
 ];
 
 export default function Admin() {
-  const { createUser, deleteUser } = useAuthContext();
+  const { createUser, deleteUser, updateUser } = useAuthContext();
   const { initPlayer } = useAppContext();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,6 +28,7 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [users, setUsers] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
 
   async function loadUsers() {
     try {
@@ -40,6 +41,20 @@ export default function Admin() {
 
   if (users === null) {
     loadUsers();
+  }
+
+  function resetForm() {
+    setName('');
+    setEmail('');
+    setPassword('');
+    setFirstName('');
+    setLastName('');
+    setCourseYear('');
+    setCourseDivision('');
+    setRole('teacher');
+    setEditingUser(null);
+    setError('');
+    setSuccess('');
   }
 
   async function handleCreate(e) {
@@ -64,14 +79,53 @@ export default function Admin() {
     const result = await createUser(data);
     if (result.success) {
       await initPlayer();
-      setName('');
-      setEmail('');
-      setPassword('');
-      setFirstName('');
-      setLastName('');
-      setCourseYear('');
-      setCourseDivision('');
+      resetForm();
       setSuccess(`¡${role === 'teacher' ? 'Docente' : 'Estudiante'} "${name}" creado correctamente.`);
+      await loadUsers();
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setError(result.error);
+    }
+  }
+
+  function handleEdit(user) {
+    setEditingUser(user);
+    setName(user.name || '');
+    setEmail(user.email || '');
+    setPassword('');
+    setRole(user.role);
+    setFirstName(user.first_name || '');
+    setLastName(user.last_name || '');
+    setCourseYear(user.course_year || '');
+    setCourseDivision(user.course_division || '');
+    setError('');
+    setSuccess('');
+  }
+
+  async function handleUpdate(e) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!name.trim()) {
+      setError('Completá el nombre.');
+      return;
+    }
+
+    const data = { name: name.trim(), email: email.trim() || undefined };
+    if (password.trim()) data.password = password.trim();
+    if (role === 'student') {
+      data.firstName = firstName.trim() || undefined;
+      data.lastName = lastName.trim() || undefined;
+      data.courseYear = courseYear || undefined;
+      data.courseDivision = courseDivision || undefined;
+    }
+
+    const result = await updateUser(editingUser.id, data);
+    if (result.success) {
+      await initPlayer();
+      resetForm();
+      setSuccess(`Usuario "${name}" actualizado correctamente.`);
       await loadUsers();
       setTimeout(() => setSuccess(''), 3000);
     } else {
@@ -88,6 +142,10 @@ export default function Admin() {
     }
   }
 
+  function handleCancelEdit() {
+    resetForm();
+  }
+
   const selectedDivisions = courseOptions.find((c) => c.year === courseYear)?.divisions || [];
 
   return (
@@ -95,8 +153,8 @@ export default function Admin() {
       <h1>⚙ Panel de Administración</h1>
 
       <div className="admin-section">
-        <h2>Crear Usuario</h2>
-        <form className="admin-form" onSubmit={handleCreate}>
+        <h2>{editingUser ? 'Editar Usuario' : 'Crear Usuario'}</h2>
+        <form className="admin-form" onSubmit={editingUser ? handleUpdate : handleCreate}>
           <div className="form-group">
             <label>Rol</label>
             <div className="role-options">
@@ -123,7 +181,7 @@ export default function Admin() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="admin-password">Contraseña</label>
+            <label htmlFor="admin-password">Contraseña{editingUser ? ' (dejar vacío para mantener)' : ''}</label>
             <input id="admin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" />
           </div>
 
@@ -166,7 +224,16 @@ export default function Admin() {
           {error && <div className="alert-error">{error}</div>}
           {success && <div className="alert-success">{success}</div>}
 
-          <button type="submit" className="btn-primary">Crear Usuario</button>
+          <div className="form-actions">
+            {editingUser && (
+              <button type="button" className="btn-secondary" onClick={handleCancelEdit}>
+                Cancelar
+              </button>
+            )}
+            <button type="submit" className="btn-primary">
+              {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -188,7 +255,7 @@ export default function Admin() {
               </thead>
               <tbody>
                 {users && users.map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user.id} className={editingUser && editingUser.id === user.id ? 'editing-row' : ''}>
                     <td>
                       {user.first_name && user.last_name
                         ? `${user.first_name} ${user.last_name}`
@@ -205,7 +272,10 @@ export default function Admin() {
                         : '-'}
                     </td>
                     <td>{user.rating || 700}</td>
-                    <td>
+                    <td className="action-buttons">
+                      <button className="btn-edit" onClick={() => handleEdit(user)}>
+                        Editar
+                      </button>
                       <button className="btn-delete" onClick={() => handleDelete(user.id, user.name || user.email)}>
                         Eliminar
                       </button>

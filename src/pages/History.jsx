@@ -15,13 +15,26 @@ function getResultLabel(result) {
 }
 
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('es-AR', {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function getWhiteName(match) {
+  return match.white_name || match.whiteName || 'Jugador';
+}
+
+function getBlackName(match) {
+  return match.black_name || match.blackName || 'Jugador';
+}
+
+function getDate(match) {
+  return match.created_at || match.date;
 }
 
 export default function History() {
@@ -45,7 +58,7 @@ export default function History() {
         {[...matches].reverse().map((match) => (
           <div key={match.id} className="match-card">
             <div className="match-header">
-              <span className="match-date">{formatDate(match.date)}</span>
+              <span className="match-date">{formatDate(getDate(match))}</span>
               <span className={`match-result-badge ${match.result}`}>
                 {getResultLabel(match.result)}
               </span>
@@ -53,13 +66,13 @@ export default function History() {
             <div className="match-players">
               <div className={`match-player ${match.result === 'white' ? 'winner' : ''}`}>
                 <span className="player-color white">◻</span>
-                <span className="player-name">{match.whiteName}</span>
+                <span className="player-name">{getWhiteName(match)}</span>
                 {match.result === 'white' && <span className="result-icon">✔</span>}
               </div>
               <span className="vs">vs</span>
               <div className={`match-player ${match.result === 'black' ? 'winner' : ''}`}>
                 <span className="player-color black">◼</span>
-                <span className="player-name">{match.blackName}</span>
+                <span className="player-name">{getBlackName(match)}</span>
                 {match.result === 'black' && <span className="result-icon">✔</span>}
               </div>
             </div>

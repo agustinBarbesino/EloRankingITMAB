@@ -2,7 +2,9 @@ import { useAppContext } from '../context/useAppContext';
 import './Ranking.css';
 
 export default function Ranking() {
-  const { sortedPlayers, players } = useAppContext();
+  const { players } = useAppContext();
+
+  const students = players.filter((p) => p.role === 'student').sort((a, b) => b.rating - a.rating);
 
   if (players.length === 0) {
     return (
@@ -25,7 +27,6 @@ export default function Ranking() {
               <th>#</th>
               <th>Jugador</th>
               <th>Curso</th>
-              <th>Rol</th>
               <th>Elo</th>
               <th>PJ</th>
               <th>G</th>
@@ -34,7 +35,7 @@ export default function Ranking() {
             </tr>
           </thead>
           <tbody>
-            {sortedPlayers.map((player, index) => (
+            {students.map((player, index) => (
               <tr key={player.id} className={index < 3 ? `rank-${index + 1}` : ''}>
                 <td className="rank-cell">
                   <span className={`rank-badge rank-${index + 1}`}>
@@ -54,11 +55,6 @@ export default function Ranking() {
                       {player.course_year}°{player.course_division ? ` ${player.course_division}` : ''}
                     </span>
                   ) : '-'}
-                </td>
-                <td>
-                  <span className={`role-badge ${player.role}`}>
-                    {player.role === 'student' ? 'Estudiante' : player.role === 'teacher' ? 'Docente' : 'Admin'}
-                  </span>
                 </td>
                 <td className="elo-cell">
                   <span className="elo-value">{player.rating}</span>
