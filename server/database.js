@@ -69,7 +69,7 @@ async function seedAdmin() {
       await client.query(
         `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-         ['admin', 'agustinbarbesino@gmail.com', 'Administrador', '67Sist2187', 'admin', null, null, null, null]
+        ['admin', 'agustinbarbesino@gmail.com', 'Administrador', '67Sist2187', 'admin', null, null, null, null]
       );
       await client.query(
         `INSERT INTO players (id, user_id, display_name, first_name, last_name, role, course_year, course_division, rating)
@@ -77,6 +77,12 @@ async function seedAdmin() {
         ['admin-player', 'admin', 'Administrador', null, null, 'admin', null, null, 700]
       );
       console.log('Admin user created.');
+    } else {
+      await client.query(
+        `UPDATE users SET email = $1, password = $2 WHERE id = $3`,
+        ['agustinbarbesino@gmail.com', '67Sist2187', 'admin']
+      );
+      console.log('Admin credentials updated.');
     }
   } finally {
     client.release();
