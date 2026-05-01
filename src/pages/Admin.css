@@ -1,0 +1,229 @@
+.admin-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.admin-page h1 {
+  color: var(--cream-100);
+  margin-bottom: 2rem;
+  font-size: 1.6rem;
+}
+
+.admin-section {
+  background: var(--cream-200);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.admin-section h2 {
+  color: var(--blue-600);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--cream-300);
+}
+
+.admin-form .form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.admin-form .form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  color: var(--brown-400);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--cream-100);
+  border: 2px solid var(--cream-300);
+  border-radius: 8px;
+  color: var(--blue-700);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--blue-400);
+}
+
+.role-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.role-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.role-option input[type="radio"] {
+  display: none;
+}
+
+.role-option span {
+  display: block;
+  padding: 0.75rem;
+  background: var(--cream-100);
+  border: 2px solid var(--cream-300);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--brown-300);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.role-option.selected span {
+  border-color: var(--blue-400);
+  background: var(--blue-500);
+  color: var(--cream-100);
+}
+
+.role-option:hover:not(:has(input:checked)) span {
+  border-color: var(--blue-400);
+}
+
+.alert-error {
+  background: rgba(192, 57, 43, 0.1);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.alert-success {
+  background: rgba(39, 103, 73, 0.1);
+  border: 1px solid var(--success);
+  color: var(--success);
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--blue-500);
+  color: var(--cream-100);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.empty-text {
+  color: var(--brown-300);
+  text-align: center;
+  padding: 1rem;
+}
+
+.users-table-container {
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table thead {
+  background: var(--blue-500);
+}
+
+.users-table th {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  color: var(--cream-200);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.users-table td {
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--cream-300);
+  color: var(--blue-700);
+  font-size: 0.9rem;
+}
+
+.users-table tbody tr:hover {
+  background: var(--cream-100);
+}
+
+.role-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role-badge.teacher {
+  background: var(--blue-400);
+  color: var(--cream-100);
+}
+
+.role-badge.student {
+  background: var(--cream-400);
+  color: var(--blue-700);
+}
+
+.btn-delete {
+  background: var(--danger);
+  color: var(--cream-100);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: #A93226;
+}
+
+@media (max-width: 600px) {
+  .admin-form .form-row {
+    flex-direction: column;
+  }
+
+  .role-options {
+    flex-direction: column;
+  }
+
+  .admin-section {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: elo-ranking-api
+    env: node
+    region: sao
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: elo-ranking-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: https://elo-ranking-itmab.vercel.app
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+databases:
+  - name: elo-ranking-db
+    plan: free
+    region: sao

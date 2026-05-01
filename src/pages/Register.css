@@ -1,0 +1,150 @@
+.register-page {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.register-page h1 {
+  color: #e94560;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.register-form {
+  background: #1e1e3a;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  color: #a0a0b0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: #16213e;
+  border: 2px solid #2a2a4a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.role-options {
+  display: flex;
+  gap: 1rem;
+}
+
+.role-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.role-option input[type="radio"] {
+  display: none;
+}
+
+.option-label {
+  display: block;
+  padding: 1rem;
+  background: #16213e;
+  border: 2px solid #2a2a4a;
+  border-radius: 8px;
+  text-align: center;
+  color: #a0a0b0;
+  transition: all 0.2s ease;
+}
+
+.role-option.selected .option-label {
+  border-color: #e94560;
+  background: rgba(233, 69, 96, 0.1);
+  color: #fff;
+}
+
+.option-label:hover {
+  border-color: #e94560;
+}
+
+.form-info {
+  background: rgba(72, 149, 239, 0.1);
+  border-left: 4px solid #4895ef;
+  padding: 0.8rem 1rem;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 1.5rem;
+}
+
+.form-info p {
+  color: #a0a0b0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.form-info strong {
+  color: #e94560;
+}
+
+.alert {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid #f87171;
+  color: #f87171;
+}
+
+.alert-success {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 1rem;
+  background: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-submit:hover {
+  background: #d63851;
+}
+
+.btn-submit:active {
+  background: #c02f47;
+}
+
+@media (max-width: 500px) {
+  .register-form {
+    padding: 1.5rem;
+  }
+
+  .role-options {
+    flex-direction: column;
+  }
+}

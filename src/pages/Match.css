@@ -1,0 +1,246 @@
+.match-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.match-page h1 {
+  color: var(--cream-100);
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+}
+
+.match-form {
+  background: var(--cream-200);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.players-selection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.player-select {
+  flex: 1;
+}
+
+.player-select label {
+  display: block;
+  color: var(--brown-400);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.player-select select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--cream-100);
+  border: 2px solid var(--cream-300);
+  border-radius: 8px;
+  color: var(--blue-700);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B5E3C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  cursor: pointer;
+}
+
+.player-select select:focus {
+  outline: none;
+  border-color: var(--blue-400);
+}
+
+.vs-divider {
+  font-weight: 700;
+  color: var(--brown-300);
+  font-size: 1.1rem;
+  padding-top: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group > label {
+  display: block;
+  color: var(--brown-400);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.result-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.result-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.result-option input[type="radio"] {
+  display: none;
+}
+
+.result-option span {
+  display: block;
+  padding: 0.75rem;
+  background: var(--cream-100);
+  border: 2px solid var(--cream-300);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--brown-300);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.result-option.selected span {
+  border-color: var(--blue-400);
+  background: var(--blue-500);
+  color: var(--cream-100);
+}
+
+.result-option:not(:has(input:disabled)):hover span {
+  border-color: var(--blue-400);
+}
+
+.result-option input:disabled + span {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.alert-error {
+  background: rgba(192, 57, 43, 0.1);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--blue-500);
+  color: var(--cream-100);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+  background: var(--cream-400);
+  color: var(--cream-300);
+  cursor: not-allowed;
+}
+
+.match-result {
+  margin-top: 1.5rem;
+  background: var(--cream-200);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.match-result h3 {
+  color: var(--blue-600);
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.result-cards {
+  display: flex;
+  gap: 1rem;
+}
+
+.result-card {
+  flex: 1;
+  padding: 1.2rem;
+  border-radius: 10px;
+  text-align: center;
+  background: var(--cream-100);
+}
+
+.result-card.positive {
+  border: 2px solid var(--success);
+}
+
+.result-card.negative {
+  border: 2px solid var(--danger);
+}
+
+.result-card.neutral {
+  border: 2px solid var(--warning);
+}
+
+.result-card .player-name {
+  color: var(--brown-300);
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.result-card .rating-change {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.result-card.positive .rating-change {
+  color: var(--success);
+}
+
+.result-card.negative .rating-change {
+  color: var(--danger);
+}
+
+.result-card.neutral .rating-change {
+  color: var(--warning);
+}
+
+.result-card .new-rating {
+  color: var(--blue-700);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .match-form {
+    padding: 1.5rem;
+  }
+
+  .players-selection {
+    flex-direction: column;
+  }
+
+  .vs-divider {
+    padding-top: 0;
+  }
+
+  .result-options {
+    flex-direction: column;
+  }
+
+  .result-cards {
+    flex-direction: column;
+  }
+}

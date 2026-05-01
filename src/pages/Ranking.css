@@ -1,0 +1,212 @@
+.ranking-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.ranking-page h1 {
+  color: var(--cream-100);
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ranking-page h1::before {
+  content: '';
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--blue-600);
+  border-radius: 12px;
+  color: var(--cream-300);
+  font-size: 1rem;
+}
+
+.ranking-table-container {
+  background: var(--cream-200);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-table thead {
+  background: var(--blue-500);
+}
+
+.ranking-table th {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  color: var(--cream-200);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ranking-table td {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--cream-300);
+  color: var(--blue-700);
+}
+
+.ranking-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.ranking-table tbody tr:hover {
+  background: var(--cream-100);
+}
+
+.ranking-table tbody tr.rank-1 {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.ranking-table tbody tr.rank-2 {
+  background: rgba(192, 192, 192, 0.1);
+}
+
+.ranking-table tbody tr.rank-3 {
+  background: rgba(205, 127, 50, 0.08);
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.rank-1 .rank-badge {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a1a2e;
+}
+
+.rank-2 .rank-badge {
+  background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+  color: #1a1a2e;
+}
+
+.rank-3 .rank-badge {
+  background: linear-gradient(135deg, #CD7F32, #B8722D);
+  color: #1a1a2e;
+}
+
+.role-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role-badge.student {
+  background: var(--cream-400);
+  color: var(--blue-700);
+}
+
+.role-badge.teacher {
+  background: var(--blue-400);
+  color: var(--cream-100);
+}
+
+.role-badge.admin {
+  background: var(--brown-400);
+  color: var(--cream-100);
+}
+
+.elo-value {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--blue-700);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-win {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.stat-draw {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.stat-loss {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .ranking-page {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .ranking-page h1 {
+    font-size: 1.3rem;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+.name-cell {
+  font-weight: 500;
+}
+
+.player-display-name {
+  display: block;
+}
+
+.course-cell {
+  white-space: nowrap;
+}
+
+.course-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--blue-100);
+  color: var(--blue-600);
+}
+
+.elo-value {
+    font-size: 0.95rem;
+  }
+
+  .role-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .rank-badge {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .ranking-table th:nth-child(3),
+  .ranking-table td:nth-child(3) {
+    display: none;
+  }
+}
