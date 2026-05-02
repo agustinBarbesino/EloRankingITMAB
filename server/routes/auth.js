@@ -181,14 +181,27 @@ router.delete('/users/:id', authenticate, async (req, res) => {
   const client = await (await import('../database.js')).pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query('DELETE FROM matches WHERE white_user_id = $1 OR black_user_id = $1', [id]);
-    await client.query('DELETE FROM players WHERE user_id = $1', [id]);
-    await client.query('DELETE FROM users WHERE id = $1', [id]);
+
+    const matchesRes = await client.query('DELETE FROM matches WHERE white_user_id = $1 OR black_user_id = $1', [id]);
+    console.log(`[DELETE] Removed ${matchesRes.rowCount} matches for user ${id}`);
+
+    const playersRes = await client.query('DELETE FROM players WHERE user_id = $1', [id]);
+    console.log(`[DELETE] Removed ${playersRes.rowCount} players for user ${id}`);
+
+    const usersRes = await client.query('DELETE FROM users WHERE id = $1', [id]);
+    console.log(`[DELETE] Removed ${usersRes.rowCount} users for user ${id}`);
+
+    if (usersRes.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+
     await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Error al eliminar el usuario.' });
+    console.error(`[DELETE ERROR] Failed to delete user ${id}:`, err.message);
+    res.status(500).json({ error: 'Error al eliminar el usuario: ' + err.message });
   } finally {
     client.release();
   }

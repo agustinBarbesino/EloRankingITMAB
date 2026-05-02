@@ -145,6 +145,8 @@ export default function Admin() {
     if (result.success) {
       await initPlayer();
       reloadUsers();
+    } else {
+      setError(result.error || 'No se pudo eliminar el usuario.');
     }
   }
 

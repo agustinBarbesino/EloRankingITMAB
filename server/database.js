@@ -32,7 +32,7 @@ async function initDB() {
 
       CREATE TABLE IF NOT EXISTS players (
         id TEXT PRIMARY KEY,
-        user_id TEXT UNIQUE NOT NULL REFERENCES users(id),
+        user_id TEXT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         display_name TEXT NOT NULL,
         first_name TEXT,
         last_name TEXT,
@@ -49,8 +49,8 @@ async function initDB() {
 
       CREATE TABLE IF NOT EXISTS matches (
         id TEXT PRIMARY KEY,
-        white_user_id TEXT NOT NULL REFERENCES users(id),
-        black_user_id TEXT NOT NULL REFERENCES users(id),
+        white_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        black_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         white_name TEXT NOT NULL,
         black_name TEXT NOT NULL,
         result TEXT NOT NULL CHECK(result IN ('white', 'black', 'draw')),
@@ -61,6 +61,21 @@ async function initDB() {
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT FALSE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token TEXT;
+    `);
+
+    await client.query(`
+      ALTER TABLE players DROP CONSTRAINT IF EXISTS players_user_id_fkey;
+      ALTER TABLE players ADD CONSTRAINT players_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    `);
+
+    await client.query(`
+      ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_white_user_id_fkey;
+      ALTER TABLE matches ADD CONSTRAINT matches_white_user_id_fkey FOREIGN KEY (white_user_id) REFERENCES users(id) ON DELETE CASCADE;
+    `);
+
+    await client.query(`
+      ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_black_user_id_fkey;
+      ALTER TABLE matches ADD CONSTRAINT matches_black_user_id_fkey FOREIGN KEY (black_user_id) REFERENCES users(id) ON DELETE CASCADE;
     `);
 
     console.log('Database initialized.');
