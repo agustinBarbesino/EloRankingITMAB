@@ -43,7 +43,10 @@ async function start() {
     console.log('Server starting...');
   } catch (err) {
     console.error('Startup error:', err);
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
+    console.warn('WARNING: Database init failed, server will start but DB operations may fail');
   }
 
   app.listen(PORT, () => {

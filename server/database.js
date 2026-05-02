@@ -6,12 +6,32 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+function parseDbUrl(url) {
+  let cleanUrl = url.replace(/channel_binding=require/, 'channel_binding=prefer');
+
+  const config = { connectionString: cleanUrl };
+
+  const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
+  config.ssl = isLocalhost ? false : { rejectUnauthorized: false };
+
+  return config;
+}
+
+const pool = new Pool(parseDbUrl(process.env.DATABASE_URL));
+
+async function testConnection() {
+  const client = await pool.connect();
+  try {
+    await client.query('SELECT 1');
+    console.log('Database connection successful.');
+    return true;
+  } finally {
+    client.release();
+  }
+}
 
 async function initDB() {
+  await testConnection();
   const client = await pool.connect();
   try {
     await client.query(`
