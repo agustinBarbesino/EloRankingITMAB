@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthContext } from '../context/useAuthContext';
 import { useAppContext } from '../context/useAppContext';
 import { api } from '../services/api';
@@ -17,6 +17,9 @@ const courseOptions = [
 export default function Admin() {
   const { createUser, deleteUser, updateUser } = useAuthContext();
   const { initPlayer } = useAppContext();
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,21 +30,24 @@ export default function Admin() {
   const [courseDivision, setCourseDivision] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [users, setUsers] = useState(null);
-  const [editingUser, setEditingUser] = useState(null);
 
-  async function loadUsers() {
-    try {
-      const data = await api.getUsers();
-      setUsers(data);
-    } catch {
+  const loaded = useRef(false);
+
+  const reloadUsers = useCallback(() => {
+    api.getUsers().then((data) => {
+      setUsers(data || []);
+      setLoadingUsers(false);
+    }).catch(() => {
       setUsers([]);
-    }
-  }
+      setLoadingUsers(false);
+    });
+  }, []);
 
-  if (users === null) {
-    loadUsers();
-  }
+  useEffect(() => {
+    if (loaded.current) return;
+    loaded.current = true;
+    reloadUsers();
+  }, [reloadUsers]);
 
   function resetForm() {
     setName('');
@@ -81,7 +87,7 @@ export default function Admin() {
       await initPlayer();
       resetForm();
       setSuccess(`¡${role === 'teacher' ? 'Docente' : 'Estudiante'} "${name}" creado correctamente.`);
-      await loadUsers();
+      reloadUsers();
       setTimeout(() => setSuccess(''), 3000);
     } else {
       setError(result.error);
@@ -126,7 +132,7 @@ export default function Admin() {
       await initPlayer();
       resetForm();
       setSuccess(`Usuario "${name}" actualizado correctamente.`);
-      await loadUsers();
+      reloadUsers();
       setTimeout(() => setSuccess(''), 3000);
     } else {
       setError(result.error);
@@ -138,7 +144,7 @@ export default function Admin() {
     const result = await deleteUser(userId);
     if (result.success) {
       await initPlayer();
-      await loadUsers();
+      reloadUsers();
     }
   }
 
@@ -239,7 +245,9 @@ export default function Admin() {
 
       <div className="admin-section">
         <h2>Usuarios Existentes</h2>
-        {users && users.length === 0 ? (
+        {loadingUsers ? (
+          <p className="empty-text">Cargando usuarios...</p>
+        ) : users.length === 0 ? (
           <p className="empty-text">No hay usuarios creados.</p>
         ) : (
           <div className="users-table-container">
