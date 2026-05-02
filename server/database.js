@@ -7,17 +7,27 @@ if (!process.env.DATABASE_URL) {
 }
 
 function parseDbUrl(url) {
-  let cleanUrl = url.replace(/channel_binding=require/, 'channel_binding=prefer');
-
-  const config = { connectionString: cleanUrl };
-
   const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
-  config.ssl = isLocalhost ? false : { rejectUnauthorized: false };
 
-  return config;
+  let baseUrl = url;
+  const qIdx = url.indexOf('?');
+  if (qIdx !== -1) {
+    baseUrl = url.substring(0, qIdx);
+  }
+
+  console.log('DB host:', baseUrl.split('@')[1]?.split('/')[0] || 'UNKNOWN');
+
+  return {
+    connectionString: baseUrl,
+    ssl: isLocalhost ? false : { rejectUnauthorized: false },
+  };
 }
 
-const pool = new Pool(parseDbUrl(process.env.DATABASE_URL));
+const pool = new Pool({
+  ...parseDbUrl(process.env.DATABASE_URL),
+  connectionTimeoutMillis: 10000,
+  statement_timeout: 10000,
+});
 
 async function testConnection() {
   const client = await pool.connect();
