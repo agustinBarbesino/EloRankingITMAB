@@ -28,22 +28,32 @@ git push -u origin main --force
    - Un servicio web para el backend
    - Una base de datos PostgreSQL
 5. En las variables de entorno del servicio web, configurá:
-   - `RESEND_API_KEY`: tu API key de [Resend](https://resend.com) (ver abajo cómo obtenerla)
-   - `RESEND_FROM`: `Elo Ranking ITMAB <onboarding@resend.dev>`
+   - `SMTP_USER`: tu email de Gmail
+   - `SMTP_PASS`: tu contraseña de aplicación de Google (ver abajo cómo generarla)
+   - `SMTP_HOST`: `smtp.gmail.com`
+   - `SMTP_PORT`: `587`
+   - `SMTP_FROM`: `Elo Ranking ITMAB <tu-email@gmail.com>`
    - `APP_URL`: la URL de tu frontend en Vercel (ej: `https://elo-ranking-itmab.vercel.app`)
 6. Click en **Apply** y esperá a que despliegue
 7. Copiá la URL del servicio (ej: `https://elo-ranking-api-xxx.onrender.com`)
 
 > **Nota**: Sin SMTP configurado, los emails de confirmación se muestran solo en los logs del servidor.
 
-## Configuración de Resend (para emails)
+## Configuración de Gmail (para emails)
 
-1. Creá una cuenta gratuita en [resend.com](https://resend.com)
-2. En el dashboard, andá a **API Keys** → **Create API Key**
-3. Copiá la API key generada
-4. En Render, andá a tu servicio web → **Environment**
-5. Agregá la variable `RESEND_API_KEY` con esa key
-6. Agregá `RESEND_FROM` con valor `Elo Ranking ITMAB <onboarding@resend.dev>`
+1. Iniciá sesión en tu cuenta de Gmail
+2. Andá a [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Si no tenés habilitada la verificación en dos pasos, activala primero
+4. Creá una **Contraseña de aplicación**:
+   - Nombre: `Elo Ranking ITMAB`
+   - Copiá la contraseña de 16 caracteres que te da Google
+5. En Render, andá a tu servicio web → **Environment**
+6. Agregá las variables:
+   - `SMTP_USER` = tu email de Gmail
+   - `SMTP_PASS` = la contraseña de aplicación (16 caracteres)
+   - `SMTP_HOST` = `smtp.gmail.com`
+   - `SMTP_PORT` = `587`
+   - `SMTP_FROM` = `Elo Ranking ITMAB <tu-email@gmail.com>`
 7. El servicio se redeploya automáticamente
 
 ## Paso 3: Desplegar Frontend en Vercel
@@ -100,11 +110,12 @@ EloRankingITMAB/
 |---|---|
 | `DATABASE_URL` | URL de PostgreSQL (auto-configurada por Render) |
 | `CORS_ORIGIN` | URL del frontend en Vercel |
-| `SMTP_HOST` | Servidor SMTP |
-| `SMTP_PORT` | Puerto SMTP (587) |
-| `SMTP_USER` | Usuario SMTP |
-| `SMTP_PASS` | Contraseña SMTP |
+| `SMTP_USER` | Tu email de Gmail |
+| `SMTP_PASS` | Contraseña de aplicación de Google (16 caracteres) |
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` |
 | `SMTP_FROM` | Remitente de emails |
+| `APP_URL` | URL del frontend en Vercel |
 
 ### Frontend (Vercel)
 | Variable | Descripción |
