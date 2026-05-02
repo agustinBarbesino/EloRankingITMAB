@@ -55,10 +55,7 @@ export const api = {
   },
 
   register(email, password, firstName, lastName, courseYear, courseDivision) {
-    return request('POST', '/auth/register', { email, password, firstName, lastName, courseYear, courseDivision }).then((data) => {
-      setToken(data.user.email);
-      return data;
-    });
+    return request('POST', '/auth/register', { email, password, firstName, lastName, courseYear, courseDivision });
   },
 
   logout() {
