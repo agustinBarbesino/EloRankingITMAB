@@ -35,8 +35,16 @@ app.use((err, req, res, _next) => {
 });
 
 async function start() {
-  await initDB();
-  await seedAdmin();
+  try {
+    console.log('Connecting to database...');
+    await initDB();
+    console.log('Seeding admin user...');
+    await seedAdmin();
+    console.log('Server starting...');
+  } catch (err) {
+    console.error('Startup error:', err);
+    process.exit(1);
+  }
 
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

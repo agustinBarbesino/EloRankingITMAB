@@ -16,11 +16,6 @@ router.post('/users', authenticate, requireRole('admin'), async (req, res) => {
   }
 
   try {
-    const existingName = await queryOne('SELECT id FROM users WHERE name = $1', [name]);
-    if (existingName) {
-      return res.status(409).json({ error: 'Ese nombre ya existe.' });
-    }
-
     if (email) {
       const existingEmail = await queryOne('SELECT id FROM users WHERE email = $1', [email]);
       if (existingEmail) {
@@ -32,8 +27,8 @@ router.post('/users', authenticate, requireRole('admin'), async (req, res) => {
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : name;
 
     await run(
-      `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division, verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE)`,
       [userId, email || null, name, password, role, firstName || null, lastName || null, courseYear || null, courseDivision || null]
     );
 
@@ -48,10 +43,11 @@ router.post('/users', authenticate, requireRole('admin'), async (req, res) => {
       user: { id: userId, name, role },
     });
   } catch (err) {
+    console.error('[ADMIN UPDATE ERROR]', err.message);
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Ese nombre o email ya existe.' });
     }
-    res.status(500).json({ error: 'Error interno del servidor.' });
+    res.status(500).json({ error: 'Error interno del servidor: ' + err.message });
   }
 });
 
