@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { queryOne, run } from '../database.js';
+import { query, queryOne, run } from '../database.js';
 import { authenticate } from '../middleware/auth.js';
 import { generateToken, sendVerificationEmail } from '../utils/emailService.js';
 
