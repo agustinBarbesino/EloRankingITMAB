@@ -29,8 +29,7 @@ export function AuthProvider({ children }) {
   async function registerStudent(email, password, firstName, lastName, courseYear, courseDivision) {
     try {
       const data = await api.register(email, password, firstName, lastName, courseYear, courseDivision);
-      setCurrentUser(data.user);
-      return { success: true, user: data.user };
+      return { success: true, email: data.email, message: data.message };
     } catch (err) {
       return { success: false, error: err.message };
     }
