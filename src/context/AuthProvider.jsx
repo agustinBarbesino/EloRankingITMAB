@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
   async function registerStudent(email, password, firstName, lastName, courseYear, courseDivision) {
     try {
       const data = await api.register(email, password, firstName, lastName, courseYear, courseDivision);
-      return { success: true, email: data.email, message: data.message };
+      return { success: true, email: data.email, message: data.message, verifyUrl: data.verifyUrl, emailSent: data.emailSent };
     } catch (err) {
       return { success: false, error: err.message };
     }

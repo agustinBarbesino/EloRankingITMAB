@@ -1,5 +1,7 @@
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const RESEND_FROM = process.env.RESEND_FROM || 'Elo Ranking ITMAB <onboarding@resend.dev>';
 
 const SMTP_HOST = process.env.SMTP_HOST || '';
 const SMTP_PORT = process.env.SMTP_PORT || 587;
@@ -7,28 +9,7 @@ const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_FROM = process.env.SMTP_FROM || 'Elo Ranking ITMAB <noreply@itmab.edu.ar>';
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const RESEND_FROM = process.env.RESEND_FROM || 'Elo Ranking ITMAB <onboarding@resend.dev>';
-
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
-
-let transporter = null;
-
-if (RESEND_API_KEY) {
-  transporter = nodemailer.createTransport({
-    host: 'smtp.resend.com',
-    port: 465,
-    secure: true,
-    auth: { user: 'resend', pass: RESEND_API_KEY },
-  });
-} else if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  });
-}
 
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
@@ -87,31 +68,77 @@ Elo Ranking ITMAB - Club de Ajedrez
   return { subject: 'Confirmá tu cuenta - Elo Ranking ITMAB', html, text };
 }
 
-async function sendEmail(to, subject, html, text) {
-  const fromEmail = RESEND_API_KEY ? RESEND_FROM : SMTP_FROM;
+async function sendEmailResend(to, subject, html, text) {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: RESEND_FROM,
+        to: [to],
+        subject,
+        html,
+        text,
+      }),
+    });
 
-  if (!transporter) {
-    console.log(`[EMAIL MOCK] To: ${to}`);
-    console.log(`[EMAIL MOCK] Subject: ${subject}`);
-    console.log(`[EMAIL MOCK] Text body:`);
-    console.log(text);
-    return { success: false, mock: true };
+    const data = await res.json();
+
+    if (res.ok) {
+      console.log(`[RESEND] Email sent to ${to}: ${data.id}`);
+      return { success: true };
+    } else {
+      console.error(`[RESEND ERROR] ${data.message}`);
+      return { success: false, error: data.message };
+    }
+  } catch (err) {
+    console.error(`[RESEND ERROR] ${err.message}`);
+    return { success: false, error: err.message };
   }
+}
+
+async function sendEmailSMTP(to, subject, html, text) {
+  const nodemailer = await import('nodemailer');
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: parseInt(SMTP_PORT, 10),
+    secure: parseInt(SMTP_PORT, 10) === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
 
   try {
     await transporter.sendMail({
-      from: fromEmail,
+      from: SMTP_FROM,
       to,
       subject,
       html,
       text,
     });
-    console.log(`[EMAIL] Sent to ${to}: ${subject}`);
+    console.log(`[SMTP] Email sent to ${to}: ${subject}`);
     return { success: true };
   } catch (err) {
-    console.error(`[EMAIL ERROR] Failed to send to ${to}:`, err.message);
+    console.error(`[SMTP ERROR] ${err.message}`);
     return { success: false, error: err.message };
   }
+}
+
+async function sendEmail(to, subject, html, text) {
+  if (RESEND_API_KEY) {
+    return sendEmailResend(to, subject, html, text);
+  }
+
+  if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
+    return sendEmailSMTP(to, subject, html, text);
+  }
+
+  console.log(`[EMAIL MOCK] To: ${to}`);
+  console.log(`[EMAIL MOCK] Subject: ${subject}`);
+  console.log(`[EMAIL MOCK] Text body:`);
+  console.log(text);
+  return { success: false, mock: true };
 }
 
 async function sendVerificationEmail(email, firstName, token) {

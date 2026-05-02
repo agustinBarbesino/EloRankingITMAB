@@ -27,6 +27,8 @@ export default function Login() {
   const [error, setError] = useState('');
   const [needsVerification, setNeedsVerification] = useState(false);
   const [registrationEmail, setRegistrationEmail] = useState('');
+  const [verifyUrl, setVerifyUrl] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -48,6 +50,8 @@ export default function Login() {
         .then((result) => {
           if (result.success) {
             setRegistrationEmail(email.trim());
+            setVerifyUrl(result.verifyUrl || '');
+            setEmailSent(result.emailSent || false);
             setIsRegister(false);
             setNeedsVerification(true);
           } else {
@@ -71,8 +75,14 @@ export default function Login() {
 
   function handleResendVerification() {
     if (!registrationEmail) return;
-    api.resendVerification(registrationEmail).then(() => {
-      setError('Email de verificación reenviado. Revisá tu bandeja de entrada.');
+    api.resendVerification(registrationEmail).then((data) => {
+      if (data.verifyUrl) {
+        setVerifyUrl(data.verifyUrl);
+        setEmailSent(data.emailSent || false);
+        setError(data.message || 'Enlace de verificación actualizado.');
+      } else {
+        setError(data.message || 'Email de verificación reenviado.');
+      }
     }).catch((err) => {
       setError(err.message);
     });
@@ -99,10 +109,26 @@ export default function Login() {
               Te enviamos un email de confirmación a <strong>{registrationEmail}</strong>.
               Hacé click en el enlace para activar tu cuenta.
             </p>
+            {emailSent ? (
+              <p className="verify-note">Si no encontrás el email, revisá spam o usá el enlace directo de abajo.</p>
+            ) : (
+              <p className="verify-note">El email no pudo enviarse. Usá el enlace directo de abajo para verificar tu cuenta.</p>
+            )}
+            {verifyUrl && (
+              <div className="verify-link-box">
+                <p className="verify-link-label">Enlace de verificación:</p>
+                <a href={verifyUrl} className="verify-link" target="_blank" rel="noopener noreferrer">
+                  {verifyUrl}
+                </a>
+                <button type="button" className="btn-copy" onClick={() => navigator.clipboard.writeText(verifyUrl)}>
+                  Copiar enlace
+                </button>
+              </div>
+            )}
             <button type="button" className="btn-primary" onClick={handleResendVerification}>
               Reenviar email de verificación
             </button>
-            <button type="button" className="btn-link" onClick={() => { setNeedsVerification(false); setRegistrationEmail(''); }}>
+            <button type="button" className="btn-link" onClick={() => { setNeedsVerification(false); setRegistrationEmail(''); setVerifyUrl(''); setEmailSent(false); }}>
               Volver al login
             </button>
           </div>

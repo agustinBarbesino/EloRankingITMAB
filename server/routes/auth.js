@@ -74,12 +74,16 @@ router.post('/register', async (req, res) => {
       [`${userId}-player`, userId, displayName, firstName, lastName, 'student', courseYear, courseDivision || null, 700]
     );
 
-    sendVerificationEmail(email, firstName, verificationToken);
+    const emailResult = await sendVerificationEmail(email, firstName, verificationToken);
+    const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+    const verifyUrl = `${APP_URL}/verify?token=${verificationToken}`;
 
     res.status(201).json({
       success: true,
       message: 'Cuenta creada. Revisá tu email para confirmarla.',
       email: email,
+      verifyUrl,
+      emailSent: emailResult.success,
     });
   } catch (err) {
     if (err.code === '23505') {
@@ -109,12 +113,15 @@ router.post('/resend-verification', async (req, res) => {
     const newToken = generateToken();
     await run('UPDATE users SET verification_token = $1 WHERE id = $2', [newToken, user.id]);
 
+    const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+    const verifyUrl = `${APP_URL}/verify?token=${newToken}`;
+
     const result = await sendVerificationEmail(user.email, user.first_name || user.name, newToken);
 
     if (result.success) {
-      res.json({ success: true, message: 'Email de verificación reenviado.' });
+      res.json({ success: true, message: 'Email de verificación reenviado.', verifyUrl, emailSent: true });
     } else {
-      res.status(500).json({ error: 'No se pudo enviar el email. Intentá más tarde.' });
+      res.json({ success: true, message: 'Token generado. Usá el enlace de abajo para verificar.', verifyUrl, emailSent: false });
     }
   } catch (err) {
     res.status(500).json({ error: 'Error interno del servidor.' });
