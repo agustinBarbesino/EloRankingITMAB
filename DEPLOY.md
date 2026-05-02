@@ -28,15 +28,23 @@ git push -u origin main --force
    - Un servicio web para el backend
    - Una base de datos PostgreSQL
 5. En las variables de entorno del servicio web, configurá:
-   - `SMTP_HOST`: tu servidor SMTP (ej: `smtp.gmail.com`)
-   - `SMTP_PORT`: puerto SMTP (ej: `587`)
-   - `SMTP_USER`: tu email
-   - `SMTP_PASS`: tu contraseña de app
-   - `SMTP_FROM`: `Elo Ranking ITMAB <noreply@itmab.edu.ar>`
+   - `RESEND_API_KEY`: tu API key de [Resend](https://resend.com) (ver abajo cómo obtenerla)
+   - `RESEND_FROM`: `Elo Ranking ITMAB <onboarding@resend.dev>`
+   - `APP_URL`: la URL de tu frontend en Vercel (ej: `https://elo-ranking-itmab.vercel.app`)
 6. Click en **Apply** y esperá a que despliegue
 7. Copiá la URL del servicio (ej: `https://elo-ranking-api-xxx.onrender.com`)
 
 > **Nota**: Sin SMTP configurado, los emails de confirmación se muestran solo en los logs del servidor.
+
+## Configuración de Resend (para emails)
+
+1. Creá una cuenta gratuita en [resend.com](https://resend.com)
+2. En el dashboard, andá a **API Keys** → **Create API Key**
+3. Copiá la API key generada
+4. En Render, andá a tu servicio web → **Environment**
+5. Agregá la variable `RESEND_API_KEY` con esa key
+6. Agregá `RESEND_FROM` con valor `Elo Ranking ITMAB <onboarding@resend.dev>`
+7. El servicio se redeploya automáticamente
 
 ## Paso 3: Desplegar Frontend en Vercel
 

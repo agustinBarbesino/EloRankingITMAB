@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { query, queryOne, run } from '../database.js';
+import { queryOne, run } from '../database.js';
 import { authenticate } from '../middleware/auth.js';
-import { sendWelcomeEmail } from '../utils/emailService.js';
+import { generateToken, sendVerificationEmail } from '../utils/emailService.js';
 
 const router = Router();
 
@@ -18,6 +18,14 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
     }
 
+    if (user.role === 'student' && !user.verified) {
+      return res.status(403).json({
+        error: 'Tu cuenta no está verificada. Revisá tu email para confirmar tu registro.',
+        needsVerification: true,
+        email: user.email,
+      });
+    }
+
     res.json({
       success: true,
       user: {
@@ -29,6 +37,7 @@ router.post('/login', async (req, res) => {
         role: user.role,
         courseYear: user.course_year,
         courseDivision: user.course_division,
+        verified: user.verified,
       },
     });
   } catch (err) {
@@ -51,11 +60,12 @@ router.post('/register', async (req, res) => {
 
     const userId = Date.now().toString();
     const displayName = `${firstName} ${lastName}`;
+    const verificationToken = generateToken();
 
     await run(
-      `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [userId, email, displayName, password, 'student', firstName, lastName, courseYear, courseDivision || null]
+      `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division, verification_token)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [userId, email, displayName, password, 'student', firstName, lastName, courseYear, courseDivision || null, verificationToken]
     );
 
     await run(
@@ -64,20 +74,12 @@ router.post('/register', async (req, res) => {
       [`${userId}-player`, userId, displayName, firstName, lastName, 'student', courseYear, courseDivision || null, 700]
     );
 
-    sendWelcomeEmail(email, firstName, password);
+    sendVerificationEmail(email, firstName, verificationToken);
 
     res.status(201).json({
       success: true,
-      user: {
-        id: userId,
-        email,
-        name: displayName,
-        firstName,
-        lastName,
-        role: 'student',
-        courseYear,
-        courseDivision: courseDivision || null,
-      },
+      message: 'Cuenta creada. Revisá tu email para confirmarla.',
+      email: email,
     });
   } catch (err) {
     if (err.code === '23505') {
@@ -87,10 +89,69 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.post('/resend-verification', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'El email es obligatorio.' });
+  }
+
+  try {
+    const user = await queryOne('SELECT * FROM users WHERE email = $1', [email]);
+    if (!user) {
+      return res.status(404).json({ error: 'No se encontró una cuenta con ese email.' });
+    }
+
+    if (user.verified) {
+      return res.status(400).json({ error: 'Tu cuenta ya está verificada. Podés iniciar sesión.' });
+    }
+
+    const newToken = generateToken();
+    await run('UPDATE users SET verification_token = $1 WHERE id = $2', [newToken, user.id]);
+
+    const result = await sendVerificationEmail(user.email, user.first_name || user.name, newToken);
+
+    if (result.success) {
+      res.json({ success: true, message: 'Email de verificación reenviado.' });
+    } else {
+      res.status(500).json({ error: 'No se pudo enviar el email. Intentá más tarde.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+});
+
+router.post('/verify', async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: 'Token de verificación requerido.' });
+  }
+
+  try {
+    const user = await queryOne('SELECT id, email, first_name FROM users WHERE verification_token = $1 AND verified = FALSE', [token]);
+    if (!user) {
+      return res.status(400).json({ error: 'Token inválido o cuenta ya verificada.' });
+    }
+
+    await run(
+      'UPDATE users SET verified = TRUE, verification_token = NULL WHERE id = $1',
+      [user.id]
+    );
+
+    res.json({
+      success: true,
+      message: '¡Cuenta verificada exitosamente! Ya podés iniciar sesión.',
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+});
+
 router.get('/users', authenticate, async (req, res) => {
   try {
     const users = await query(`
-      SELECT u.id, u.email, u.name, u.role, u.first_name, u.last_name, u.course_year, u.course_division,
+      SELECT u.id, u.email, u.name, u.role, u.first_name, u.last_name, u.course_year, u.course_division, u.verified,
              COALESCE(p.rating, 700) as rating
       FROM users u
       LEFT JOIN players p ON u.id = p.user_id

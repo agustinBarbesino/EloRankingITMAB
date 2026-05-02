@@ -96,4 +96,12 @@ export const api = {
   updateUser(id, data) {
     return request('PUT', `/admin/users/${id}`, data);
   },
+
+  verify(token) {
+    return request('POST', '/auth/verify', { token });
+  },
+
+  resendVerification(email) {
+    return request('POST', '/auth/resend-verification', { email });
+  },
 };

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
 const SMTP_HOST = process.env.SMTP_HOST || '';
@@ -5,11 +6,22 @@ const SMTP_PORT = process.env.SMTP_PORT || 587;
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_FROM = process.env.SMTP_FROM || 'Elo Ranking ITMAB <noreply@itmab.edu.ar>';
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const RESEND_FROM = process.env.RESEND_FROM || 'Elo Ranking ITMAB <onboarding@resend.dev>';
+
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
 
 let transporter = null;
 
-if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
+if (RESEND_API_KEY) {
+  transporter = nodemailer.createTransport({
+    host: 'smtp.resend.com',
+    port: 465,
+    secure: true,
+    auth: { user: 'resend', pass: RESEND_API_KEY },
+  });
+} else if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: parseInt(SMTP_PORT, 10),
@@ -18,8 +30,12 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
   });
 }
 
-function sendWelcomeEmail(to, firstName, password) {
-  const subject = '¡Bienvenido al Club de Ajedrez ITMAB!';
+function generateToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function generateVerificationEmail(email, firstName, token) {
+  const verifyUrl = `${APP_URL}/verify?token=${token}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -28,26 +44,23 @@ function sendWelcomeEmail(to, firstName, password) {
         <p style="color: #D4B896; margin: 5px 0 0;">Club de Ajedrez</p>
       </div>
       <div style="background: #F5EDDF; padding: 30px 20px; border-radius: 0 0 8px 8px;">
-        <h2 style="color: #1B3A4B;">¡Hola ${firstName}!</h2>
+        <h2 style="color: #1B3A4B;">¡Bienvenido/a ${firstName}!</h2>
         <p style="color: #6B4226; font-size: 16px; line-height: 1.6;">
-          Tu cuenta en el <strong>Elo Ranking ITMAB</strong> ha sido creada exitosamente.
-          Ya podés participar del club de ajedrez y competir en el ranking.
+          Tu cuenta en el <strong>Elo Ranking ITMAB</strong> ha sido creada.
+          Para poder acceder, debés confirmar tu email haciendo click en el siguiente botón:
         </p>
-        <div style="background: #FFF8F0; border-left: 4px solid #3A7CA5; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0;">
-          <p style="margin: 0 0 8px; color: #1B3A4B; font-weight: 600;">Tus datos de acceso:</p>
-          <p style="margin: 0; color: #6B4226;">
-            <strong>Email:</strong> ${to}<br>
-            <strong>Contraseña:</strong> ${password}
-          </p>
-        </div>
-        <p style="color: #6B4226; font-size: 14px;">
-          Tu Elo inicial es de <strong>700 puntos</strong>. ¡A jugar! ♟
-        </p>
-        <div style="text-align: center; margin-top: 25px;">
-          <a href="${APP_URL}/login" style="background: #3A7CA5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-            Ir al Ranking
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="${verifyUrl}" style="background: #3A7CA5; color: white; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; font-size: 16px;">
+            Confirmar mi cuenta
           </a>
         </div>
+        <p style="color: #6B4226; font-size: 14px; line-height: 1.6;">
+          Si el botón no funciona, copiá y pegá el siguiente enlace en tu navegador:<br>
+          <a href="${verifyUrl}" style="color: #3A7CA5; word-break: break-all;">${verifyUrl}</a>
+        </p>
+        <p style="color: #6B4226; font-size: 14px; line-height: 1.6;">
+          Una vez confirmado, tu Elo inicial será de <strong>700 puntos</strong>. ¡A jugar! ♟
+        </p>
         <p style="color: #8B5E3C; font-size: 12px; margin-top: 30px; text-align: center; border-top: 1px solid #D4B896; padding-top: 15px;">
           Este es un mensaje automático, por favor no respondas a este correo.<br>
           Elo Ranking ITMAB - Club de Ajedrez
@@ -59,33 +72,35 @@ function sendWelcomeEmail(to, firstName, password) {
   const text = `
 ¡Bienvenido/a ${firstName} al Club de Ajedrez ITMAB!
 
-Tu cuenta ha sido creada exitosamente.
+Tu cuenta ha sido creada. Para activarla, confirmá tu email haciendo click en el siguiente enlace:
 
-Datos de acceso:
-Email: ${to}
-Contraseña: ${password}
+${verifyUrl}
 
-Tu Elo inicial es de 700 puntos.
+Si el enlace no funciona, copiá y pegalo en tu navegador.
 
-Ingresá a: ${APP_URL}/login
+Una vez confirmado, tu Elo inicial será de 700 puntos.
 
 --
 Elo Ranking ITMAB - Club de Ajedrez
   `;
 
-  return sendEmail(to, subject, html, text);
+  return { subject: 'Confirmá tu cuenta - Elo Ranking ITMAB', html, text };
 }
 
 async function sendEmail(to, subject, html, text) {
+  const fromEmail = RESEND_API_KEY ? RESEND_FROM : SMTP_FROM;
+
   if (!transporter) {
-    console.log(`[EMAIL MOCK] To: ${to} | Subject: ${subject}`);
-    console.log(`[EMAIL MOCK] Text: ${text}`);
-    return { success: true, mock: true };
+    console.log(`[EMAIL MOCK] To: ${to}`);
+    console.log(`[EMAIL MOCK] Subject: ${subject}`);
+    console.log(`[EMAIL MOCK] Text body:`);
+    console.log(text);
+    return { success: false, mock: true };
   }
 
   try {
     await transporter.sendMail({
-      from: SMTP_FROM,
+      from: fromEmail,
       to,
       subject,
       html,
@@ -99,4 +114,9 @@ async function sendEmail(to, subject, html, text) {
   }
 }
 
-export { sendWelcomeEmail };
+async function sendVerificationEmail(email, firstName, token) {
+  const { subject, html, text } = generateVerificationEmail(email, firstName, token);
+  return sendEmail(email, subject, html, text);
+}
+
+export { generateToken, sendVerificationEmail, sendEmail };

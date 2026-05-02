@@ -25,6 +25,8 @@ async function initDB() {
         last_name TEXT,
         course_year TEXT,
         course_division TEXT,
+        verified BOOLEAN DEFAULT FALSE,
+        verification_token TEXT,
         created_at TIMESTAMP DEFAULT NOW()
       );
 
@@ -55,6 +57,12 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token TEXT;
+    `);
+
     console.log('Database initialized.');
   } finally {
     client.release();
@@ -67,8 +75,8 @@ async function seedAdmin() {
     const existing = await client.query('SELECT id FROM users WHERE id = $1', ['admin']);
     if (existing.rows.length === 0) {
       await client.query(
-        `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division, verified)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE)`,
         ['admin', 'agustinbarbesino@gmail.com', 'Administrador', '67Sist2187', 'admin', null, null, null, null]
       );
       await client.query(
@@ -79,7 +87,7 @@ async function seedAdmin() {
       console.log('Admin user created.');
     } else {
       await client.query(
-        `UPDATE users SET email = $1, password = $2 WHERE id = $3`,
+        `UPDATE users SET email = $1, password = $2, verified = TRUE WHERE id = $3`,
         ['agustinbarbesino@gmail.com', '67Sist2187', 'admin']
       );
       console.log('Admin credentials updated.');

@@ -167,3 +167,141 @@
     gap: 0;
   }
 }
+
+.verify-prompt {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.verify-prompt h3 {
+  color: var(--blue-600);
+  margin: 1rem 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.verify-prompt p {
+  color: var(--brown-300);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.verify-prompt p strong {
+  color: var(--blue-700);
+}
+
+.verify-status {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.verify-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 auto 1rem;
+}
+
+.verify-icon.success {
+  background: rgba(39, 103, 73, 0.1);
+  color: var(--success);
+  border: 2px solid var(--success);
+}
+
+.verify-icon.error {
+  background: rgba(192, 57, 43, 0.1);
+  color: var(--danger);
+  border: 2px solid var(--danger);
+}
+
+.verify-icon.info {
+  background: rgba(58, 124, 165, 0.1);
+  color: var(--blue-400);
+  border: 2px solid var(--blue-400);
+}
+
+.verify-message {
+  color: var(--blue-700);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.verify-hint {
+  color: var(--brown-300);
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--cream-300);
+  border-top-color: var(--blue-400);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.resend-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--cream-300);
+}
+
+.resend-section p {
+  color: var(--brown-300);
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.resend-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.resend-form input {
+  flex: 1;
+}
+
+.resend-form .btn-primary {
+  margin-top: 0;
+  white-space: nowrap;
+  width: auto;
+  padding: 0.8rem 1.2rem;
+}
+
+.resend-success {
+  color: var(--success);
+  font-size: 0.85rem;
+}
+
+.resend-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--blue-400);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.btn-link:hover {
+  color: var(--blue-500);
+}
