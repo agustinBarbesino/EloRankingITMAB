@@ -1,60 +1,20 @@
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
-import dns from 'dns';
 
-// Force IPv4 to avoid ENETUNREACH on Render (no IPv6 support)
+// Force IPv4
+import dns from 'dns';
 dns.setDefaultResultOrder('ipv4first');
 
-const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = process.env.SMTP_PORT || 587;
-const SMTP_USER = process.env.SMTP_USER || '';
-const SMTP_PASS = process.env.SMTP_PASS || '';
-const SMTP_FROM = process.env.SMTP_FROM || `Elo Ranking ITMAB <${SMTP_USER}>`;
-
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || '';
+const BREVO_SENDER_NAME = 'Elo Ranking ITMAB';
 
-console.log('[SMTP] SMTP_USER configured:', !!SMTP_USER);
-console.log('[SMTP] SMTP_PASS configured:', !!SMTP_PASS);
-console.log('[SMTP] Using:', SMTP_HOST, SMTP_PORT);
-console.log('[SMTP] APP_URL:', APP_URL);
+console.log('[EMAIL] BREVO_API_KEY configured:', !!BREVO_API_KEY);
+console.log('[EMAIL] BREVO_SENDER_EMAIL configured:', !!BREVO_SENDER_EMAIL);
+console.log('[EMAIL] APP_URL:', APP_URL);
 
-// Resolve SMTP host to IPv4 to prevent nodemailer from trying IPv6
-const SMTP_IP = await new Promise((resolve) => {
-  dns.resolve4(SMTP_HOST, (err, addresses) => {
-    if (err || !addresses || addresses.length === 0) {
-      console.error('[SMTP] Failed to resolve IPv4 for', SMTP_HOST, err?.message);
-      resolve(SMTP_HOST);
-    } else {
-      console.log('[SMTP] Resolved', SMTP_HOST, '->', addresses[0]);
-      resolve(addresses[0]);
-    }
-  });
-});
-
-let transporter = null;
-
-if (SMTP_USER && SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    host: SMTP_IP,
-    port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-    connectionTimeout: 5000,
-    socketTimeout: 10000,
-    tls: {
-      servername: SMTP_HOST,
-    },
-  });
-  transporter.verify((err, success) => {
-    if (err) {
-      console.error('[SMTP] Connection test failed:', err.message);
-    } else {
-      console.log('[SMTP] Connection test successful.');
-    }
-  });
-} else {
-  console.log('[SMTP] Credentials not set. Emails will be mocked.');
-}
+let emailProvider = BREVO_API_KEY ? 'brevo' : 'mock';
+console.log('[EMAIL] Using provider:', emailProvider);
 
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
@@ -66,7 +26,7 @@ function generateVerificationEmail(email, firstName, token) {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: #1B3A4B; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-        <h1 style="color: #FFF8F0; margin: 0;">♚ Elo Ranking ITMAB</h1>
+        <h1 style="color: #FFF8F0; margin: 0;">&#9818; Elo Ranking ITMAB</h1>
         <p style="color: #D4B896; margin: 5px 0 0;">Club de Ajedrez</p>
       </div>
       <div style="background: #F5EDDF; padding: 30px 20px; border-radius: 0 0 8px 8px;">
@@ -85,7 +45,7 @@ function generateVerificationEmail(email, firstName, token) {
           <a href="${verifyUrl}" style="color: #3A7CA5; word-break: break-all;">${verifyUrl}</a>
         </p>
         <p style="color: #6B4226; font-size: 14px; line-height: 1.6;">
-          Una vez confirmado, tu Elo inicial será de <strong>700 puntos</strong>. ¡A jugar! ♟
+          Una vez confirmado, tu Elo inicial será de <strong>700 puntos</strong>. ¡A jugar! &#9823;
         </p>
         <p style="color: #8B5E3C; font-size: 12px; margin-top: 30px; text-align: center; border-top: 1px solid #D4B896; padding-top: 15px;">
           Este es un mensaje automático, por favor no respondas a este correo.<br>
@@ -114,26 +74,41 @@ Elo Ranking ITMAB - Club de Ajedrez
 }
 
 async function sendEmail(to, subject, html, text) {
-  if (!transporter) {
+  if (emailProvider === 'mock') {
     console.log(`[EMAIL MOCK] To: ${to}`);
     console.log(`[EMAIL MOCK] Subject: ${subject}`);
     console.log(`[EMAIL MOCK] Text body:`);
     console.log(text);
-    return { success: false, mock: true, reason: 'SMTP not configured' };
+    return { success: false, mock: true, reason: 'Email not configured' };
   }
 
   try {
-    await transporter.sendMail({
-      from: SMTP_FROM,
-      to,
-      subject,
-      html,
-      text,
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: { email: BREVO_SENDER_EMAIL, name: BREVO_SENDER_NAME },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+        textContent: text,
+      }),
     });
-    console.log(`[EMAIL] Sent to ${to}: ${subject}`);
-    return { success: true };
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`[EMAIL] Brevo sent to ${to}: messageId=${data.messageId}`);
+      return { success: true };
+    } else {
+      const errorBody = await response.text();
+      console.error(`[EMAIL ERROR] Brevo failed for ${to}:`, response.status, errorBody);
+      return { success: false, error: `Brevo ${response.status}: ${errorBody}` };
+    }
   } catch (err) {
-    console.error(`[EMAIL ERROR] Failed to send to ${to}:`, err.message);
+    console.error(`[EMAIL ERROR] Brevo crashed for ${to}:`, err.message);
     return { success: false, error: err.message };
   }
 }
@@ -141,7 +116,6 @@ async function sendEmail(to, subject, html, text) {
 async function sendVerificationEmail(email, firstName, token) {
   try {
     console.log('[EMAIL] Starting sendVerificationEmail for:', email);
-    console.log('[EMAIL] Transporter available:', !!transporter);
     const { subject, html, text } = generateVerificationEmail(email, firstName, token);
     const result = await sendEmail(email, subject, html, text);
     console.log('[EMAIL] sendVerificationEmail result:', JSON.stringify(result));
