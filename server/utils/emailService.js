@@ -18,17 +18,32 @@ console.log('[SMTP] SMTP_PASS configured:', !!SMTP_PASS);
 console.log('[SMTP] Using:', SMTP_HOST, SMTP_PORT);
 console.log('[SMTP] APP_URL:', APP_URL);
 
+// Resolve SMTP host to IPv4 to prevent nodemailer from trying IPv6
+const SMTP_IP = await new Promise((resolve) => {
+  dns.resolve4(SMTP_HOST, (err, addresses) => {
+    if (err || !addresses || addresses.length === 0) {
+      console.error('[SMTP] Failed to resolve IPv4 for', SMTP_HOST, err?.message);
+      resolve(SMTP_HOST);
+    } else {
+      console.log('[SMTP] Resolved', SMTP_HOST, '->', addresses[0]);
+      resolve(addresses[0]);
+    }
+  });
+});
+
 let transporter = null;
 
 if (SMTP_USER && SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
+    host: SMTP_IP,
     port: parseInt(SMTP_PORT, 10),
     secure: parseInt(SMTP_PORT, 10) === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
-    family: 4,
     connectionTimeout: 5000,
     socketTimeout: 10000,
+    tls: {
+      servername: SMTP_HOST,
+    },
   });
   transporter.verify((err, success) => {
     if (err) {
