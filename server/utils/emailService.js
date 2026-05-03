@@ -26,6 +26,7 @@ if (SMTP_USER && SMTP_PASS) {
     port: parseInt(SMTP_PORT, 10),
     secure: parseInt(SMTP_PORT, 10) === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
+    family: 4,
     connectionTimeout: 5000,
     socketTimeout: 10000,
   });
