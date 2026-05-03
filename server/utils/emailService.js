@@ -1,5 +1,9 @@
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+
+// Force IPv4 to avoid ENETUNREACH on Render (no IPv6 support)
+dns.setDefaultResultOrder('ipv4first');
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = process.env.SMTP_PORT || 587;
