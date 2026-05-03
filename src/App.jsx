@@ -4,7 +4,6 @@ import { AppProvider } from './context/AppProvider';
 import { useAuthContext } from './context/useAuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
-import Verify from './pages/Verify';
 import Ranking from './pages/Ranking';
 import History from './pages/History';
 import Match from './pages/Match';
@@ -30,11 +29,10 @@ function AppRoutes() {
 
   if (!currentUser) {
     return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/verify" element={<Verify />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
     );
   }
 

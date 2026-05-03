@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { query, queryOne, run } from '../database.js';
 import { authenticate } from '../middleware/auth.js';
-import { generateToken, sendVerificationEmail } from '../utils/emailService.js';
 
 const router = Router();
 
@@ -18,14 +17,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
     }
 
-    if (user.role === 'student' && !user.verified) {
-      return res.status(403).json({
-        error: 'Tu cuenta no está verificada. Revisá tu email para confirmar tu registro.',
-        needsVerification: true,
-        email: user.email,
-      });
-    }
-
     res.json({
       success: true,
       user: {
@@ -37,7 +28,6 @@ router.post('/login', async (req, res) => {
         role: user.role,
         courseYear: user.course_year,
         courseDivision: user.course_division,
-        verified: user.verified,
       },
     });
   } catch (err) {
@@ -60,12 +50,11 @@ router.post('/register', async (req, res) => {
 
     const userId = Date.now().toString();
     const displayName = `${firstName} ${lastName}`;
-    const verificationToken = generateToken();
 
     await run(
-      `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division, verification_token)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [userId, email, displayName, password, 'student', firstName, lastName, courseYear, courseDivision || null, verificationToken]
+      `INSERT INTO users (id, email, name, password, role, first_name, last_name, course_year, course_division, verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE)`,
+      [userId, email, displayName, password, 'student', firstName, lastName, courseYear, courseDivision || null]
     );
 
     await run(
@@ -74,91 +63,14 @@ router.post('/register', async (req, res) => {
       [`${userId}-player`, userId, displayName, firstName, lastName, 'student', courseYear, courseDivision || null, 700]
     );
 
-    const APP_URL = process.env.APP_URL || 'http://localhost:5173';
-    const verifyUrl = `${APP_URL}/verify?token=${verificationToken}`;
-
-    // Send email in background, don't block the response
-    sendVerificationEmail(email, firstName, verificationToken)
-      .then((emailResult) => {
-        console.log('[REGISTER] Email result:', JSON.stringify(emailResult));
-      })
-      .catch((err) => {
-        console.error('[REGISTER] Email error:', err.message);
-      });
-
     res.status(201).json({
       success: true,
-      message: 'Cuenta creada. Revisá tu email para confirmarla.',
-      email: email,
-      verifyUrl,
-      emailSent: false,
+      message: 'Cuenta creada exitosamente.',
     });
   } catch (err) {
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Ese email ya está registrado.' });
     }
-    res.status(500).json({ error: 'Error interno del servidor.' });
-  }
-});
-
-router.post('/resend-verification', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ error: 'El email es obligatorio.' });
-  }
-
-  try {
-    const user = await queryOne('SELECT * FROM users WHERE email = $1', [email]);
-    if (!user) {
-      return res.status(404).json({ error: 'No se encontró una cuenta con ese email.' });
-    }
-
-    if (user.verified) {
-      return res.status(400).json({ error: 'Tu cuenta ya está verificada. Podés iniciar sesión.' });
-    }
-
-    const newToken = generateToken();
-    await run('UPDATE users SET verification_token = $1 WHERE id = $2', [newToken, user.id]);
-
-    const APP_URL = process.env.APP_URL || 'http://localhost:5173';
-    const verifyUrl = `${APP_URL}/verify?token=${newToken}`;
-
-    const result = await sendVerificationEmail(user.email, user.first_name || user.name, newToken);
-
-    if (result.success) {
-      res.json({ success: true, message: 'Email de verificación reenviado.', verifyUrl, emailSent: true });
-    } else {
-      res.json({ success: true, message: 'Token generado. Usá el enlace de abajo para verificar.', verifyUrl, emailSent: false });
-    }
-  } catch (err) {
-    res.status(500).json({ error: 'Error interno del servidor.' });
-  }
-});
-
-router.post('/verify', async (req, res) => {
-  const { token } = req.body;
-
-  if (!token) {
-    return res.status(400).json({ error: 'Token de verificación requerido.' });
-  }
-
-  try {
-    const user = await queryOne('SELECT id, email, first_name FROM users WHERE verification_token = $1 AND verified = FALSE', [token]);
-    if (!user) {
-      return res.status(400).json({ error: 'Token inválido o cuenta ya verificada.' });
-    }
-
-    await run(
-      'UPDATE users SET verified = TRUE, verification_token = NULL WHERE id = $1',
-      [user.id]
-    );
-
-    res.json({
-      success: true,
-      message: '¡Cuenta verificada exitosamente! Ya podés iniciar sesión.',
-    });
-  } catch (err) {
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
 });

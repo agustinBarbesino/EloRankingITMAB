@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../context/useAuthContext';
-import { api } from '../services/api';
 import './Login.css';
 
 const courseOptions = [
@@ -25,17 +24,13 @@ export default function Login() {
   const [courseYear, setCourseYear] = useState('');
   const [courseDivision, setCourseDivision] = useState('');
   const [error, setError] = useState('');
-  const [needsVerification, setNeedsVerification] = useState(false);
-  const [registrationEmail, setRegistrationEmail] = useState('');
-  const [verifyUrl, setVerifyUrl] = useState('');
-  const [emailSent, setEmailSent] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    setNeedsVerification(false);
-    setRegistrationEmail('');
+    setRegistrationSuccess(false);
 
     if (!email.trim() || !password.trim()) {
       setError('Completá todos los campos.');
@@ -51,11 +46,7 @@ export default function Login() {
       registerStudent(email.trim(), password, firstName.trim(), lastName.trim(), courseYear, courseDivision || null)
         .then((result) => {
           if (result.success) {
-            setRegistrationEmail(email.trim());
-            setVerifyUrl(result.verifyUrl || '');
-            setEmailSent(result.emailSent || false);
-            setIsRegister(false);
-            setNeedsVerification(true);
+            setRegistrationSuccess(true);
           } else {
             setError(result.error);
           }
@@ -72,10 +63,6 @@ export default function Login() {
         .then((result) => {
           if (result.success) {
             navigate('/');
-          } else if (result.needsVerification) {
-            setNeedsVerification(true);
-            setRegistrationEmail(result.email);
-            setError('Tu cuenta no está verificada.');
           } else {
             setError(result.error);
           }
@@ -87,21 +74,6 @@ export default function Login() {
           setLoading(false);
         });
     }
-  }
-
-  function handleResendVerification() {
-    if (!registrationEmail) return;
-    api.resendVerification(registrationEmail).then((data) => {
-      if (data.verifyUrl) {
-        setVerifyUrl(data.verifyUrl);
-        setEmailSent(data.emailSent || false);
-        setError(data.message || 'Enlace de verificación actualizado.');
-      } else {
-        setError(data.message || 'Email de verificación reenviado.');
-      }
-    }).catch((err) => {
-      setError(err.message);
-    });
   }
 
   const selectedDivisions = courseOptions.find((c) => c.year === courseYear)?.divisions || [];
@@ -117,34 +89,15 @@ export default function Login() {
 
         <h2>{isRegister ? 'Registro de Estudiante' : 'Iniciar Sesión'}</h2>
 
-        {needsVerification ? (
+        {registrationSuccess ? (
           <div className="verify-prompt">
-            <div className="verify-icon info">✉</div>
-            <h3>Revisá tu email</h3>
-            <p>
-              Te enviamos un email de confirmación a <strong>{registrationEmail}</strong>.
-              Hacé click en el enlace para activar tu cuenta.
-            </p>
-            {emailSent ? (
-              <p className="verify-note">Si no encontrás el email, revisá spam o usá el enlace directo de abajo.</p>
-            ) : (
-              <p className="verify-note">El email no pudo enviarse. Usá el enlace directo de abajo para verificar tu cuenta.</p>
-            )}
-            {verifyUrl && (
-              <div className="verify-link-box">
-                <p className="verify-link-label">Enlace de verificación:</p>
-                <a href={verifyUrl} className="verify-link" target="_blank" rel="noopener noreferrer">
-                  {verifyUrl}
-                </a>
-                <button type="button" className="btn-copy" onClick={() => navigator.clipboard.writeText(verifyUrl)}>
-                  Copiar enlace
-                </button>
-              </div>
-            )}
-            <button type="button" className="btn-primary" onClick={handleResendVerification}>
-              Reenviar email de verificación
+            <div className="verify-icon success">✓</div>
+            <h3>¡Registro exitoso!</h3>
+            <p>Tu cuenta fue creada correctamente.</p>
+            <button type="button" className="btn-primary" onClick={() => navigate('/')}>
+              Ir al ranking
             </button>
-            <button type="button" className="btn-link" onClick={() => { setNeedsVerification(false); setRegistrationEmail(''); setVerifyUrl(''); setEmailSent(false); }}>
+            <button type="button" className="btn-link" onClick={() => { setRegistrationSuccess(false); setEmail(''); setPassword(''); setFirstName(''); setLastName(''); setCourseYear(''); setCourseDivision(''); }}>
               Volver al login
             </button>
           </div>
