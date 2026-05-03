@@ -74,16 +74,24 @@ router.post('/register', async (req, res) => {
       [`${userId}-player`, userId, displayName, firstName, lastName, 'student', courseYear, courseDivision || null, 700]
     );
 
-    const emailResult = await sendVerificationEmail(email, firstName, verificationToken);
     const APP_URL = process.env.APP_URL || 'http://localhost:5173';
     const verifyUrl = `${APP_URL}/verify?token=${verificationToken}`;
+
+    // Send email in background, don't block the response
+    sendVerificationEmail(email, firstName, verificationToken)
+      .then((emailResult) => {
+        console.log('[REGISTER] Email result:', JSON.stringify(emailResult));
+      })
+      .catch((err) => {
+        console.error('[REGISTER] Email error:', err.message);
+      });
 
     res.status(201).json({
       success: true,
       message: 'Cuenta creada. Revisá tu email para confirmarla.',
       email: email,
       verifyUrl,
-      emailSent: emailResult.success,
+      emailSent: false,
     });
   } catch (err) {
     if (err.code === '23505') {

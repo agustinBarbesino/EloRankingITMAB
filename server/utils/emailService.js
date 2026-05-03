@@ -9,6 +9,11 @@ const SMTP_FROM = process.env.SMTP_FROM || `Elo Ranking ITMAB <${SMTP_USER}>`;
 
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
 
+console.log('[SMTP] SMTP_USER configured:', !!SMTP_USER);
+console.log('[SMTP] SMTP_PASS configured:', !!SMTP_PASS);
+console.log('[SMTP] Using:', SMTP_HOST, SMTP_PORT);
+console.log('[SMTP] APP_URL:', APP_URL);
+
 let transporter = null;
 
 if (SMTP_USER && SMTP_PASS) {
@@ -17,7 +22,18 @@ if (SMTP_USER && SMTP_PASS) {
     port: parseInt(SMTP_PORT, 10),
     secure: parseInt(SMTP_PORT, 10) === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
+    connectionTimeout: 5000,
+    socketTimeout: 10000,
   });
+  transporter.verify((err, success) => {
+    if (err) {
+      console.error('[SMTP] Connection test failed:', err.message);
+    } else {
+      console.log('[SMTP] Connection test successful.');
+    }
+  });
+} else {
+  console.log('[SMTP] Credentials not set. Emails will be mocked.');
 }
 
 function generateToken() {
@@ -83,7 +99,7 @@ async function sendEmail(to, subject, html, text) {
     console.log(`[EMAIL MOCK] Subject: ${subject}`);
     console.log(`[EMAIL MOCK] Text body:`);
     console.log(text);
-    return { success: false, mock: true };
+    return { success: false, mock: true, reason: 'SMTP not configured' };
   }
 
   try {
@@ -103,8 +119,16 @@ async function sendEmail(to, subject, html, text) {
 }
 
 async function sendVerificationEmail(email, firstName, token) {
-  const { subject, html, text } = generateVerificationEmail(email, firstName, token);
-  return sendEmail(email, subject, html, text);
+  try {
+    console.log('[EMAIL] Starting sendVerificationEmail for:', email);
+    console.log('[EMAIL] Transporter available:', !!transporter);
+    const { subject, html, text } = generateVerificationEmail(email, firstName, token);
+    const result = await sendEmail(email, subject, html, text);
+    console.log('[EMAIL] sendVerificationEmail result:', JSON.stringify(result));
+    return result;
+  } catch (err) {
+    console.error('[EMAIL] sendVerificationEmail crashed:', err.message, err.stack);
+    return { success: false, error: err.message };
+  }
 }
-
-export { generateToken, sendVerificationEmail, sendEmail };
+export { generateToken, sendVerificationEmail, sendEmail, APP_URL };

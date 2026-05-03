@@ -29,6 +29,7 @@ export default function Login() {
   const [registrationEmail, setRegistrationEmail] = useState('');
   const [verifyUrl, setVerifyUrl] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -46,6 +47,7 @@ export default function Login() {
         setError('Completá todos los campos.');
         return;
       }
+      setLoading(true);
       registerStudent(email.trim(), password, firstName.trim(), lastName.trim(), courseYear, courseDivision || null)
         .then((result) => {
           if (result.success) {
@@ -57,19 +59,33 @@ export default function Login() {
           } else {
             setError(result.error);
           }
+        })
+        .catch((err) => {
+          setError(err.message || 'Error al registrar.');
+        })
+        .finally(() => {
+          setLoading(false);
         });
     } else {
-      login(email.trim(), password).then((result) => {
-        if (result.success) {
-          navigate('/');
-        } else if (result.needsVerification) {
-          setNeedsVerification(true);
-          setRegistrationEmail(result.email);
-          setError('Tu cuenta no está verificada.');
-        } else {
-          setError(result.error);
-        }
-      });
+      setLoading(true);
+      login(email.trim(), password)
+        .then((result) => {
+          if (result.success) {
+            navigate('/');
+          } else if (result.needsVerification) {
+            setNeedsVerification(true);
+            setRegistrationEmail(result.email);
+            setError('Tu cuenta no está verificada.');
+          } else {
+            setError(result.error);
+          }
+        })
+        .catch((err) => {
+          setError(err.message || 'Error al iniciar sesión.');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }
 
@@ -183,8 +199,8 @@ export default function Login() {
 
             {error && <div className="alert-error">{error}</div>}
 
-            <button type="submit" className="btn-primary">
-              {isRegister ? 'Registrarse' : 'Ingresar'}
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Procesando...' : isRegister ? 'Registrarse' : 'Ingresar'}
             </button>
           </form>
         )}

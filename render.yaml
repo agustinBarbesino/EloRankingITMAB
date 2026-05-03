@@ -4,29 +4,24 @@ services:
     env: node
     region: ohio
     plan: free
-    buildCommand: cd server && npm install
+    buildCommand: npm install && npm run build && cd server && npm install
     startCommand: cd server && node index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: elo-ranking-db
-          property: connectionString
+        sync: false
       - key: CORS_ORIGIN
         value: https://elo-ranking-itmab.vercel.app
       - key: SMTP_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: SMTP_PORT
-        sync: false
+        value: "587"
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
         sync: false
       - key: SMTP_FROM
         sync: false
-
-databases:
-  - name: elo-ranking-db
-    plan: free
-    region: ohio
+      - key: APP_URL
+        sync: false
